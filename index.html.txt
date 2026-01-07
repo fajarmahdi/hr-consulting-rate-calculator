@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HR Consulting Pricing Calculator (Real-time)</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            display: flex;
+            justify-content: center;
+            padding: 40px;
+            color: #1f2937;
+        }
+
+        .container {
+            background: white;
+            width: 900px;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+        }
+
+        h1 {
+            color: #111827;
+            margin-bottom: 5px;
+        }
+
+        p.subtitle {
+            color: #6b7280;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+        }
+
+        /* INPUT SECTION */
+        .section-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: #6b7280;
+            text-transform: uppercase;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 5px;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            transition: opacity 0.3s;
+        }
+
+        .input-group.disabled {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .hint {
+            font-size: 11px;
+            color: #9ca3af;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 16px;
+            transition: border-color 0.2s;
+        }
+
+        input[type="number"]:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+        }
+
+        /* OUTPUT SECTION */
+        .output-card {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            position: relative;
+            transition: transform 0.2s;
+        }
+
+        .output-card.highlight {
+            background: #eff6ff;
+            border-color: #bfdbfe;
+        }
+
+        .option-badge {
+            font-size: 10px;
+            font-weight: 700;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            display: inline-block;
+            margin-bottom: 8px;
+        }
+
+        .badge-a { background: #2563eb; }
+        .badge-b { background: #059669; }
+        .badge-c { background: #d97706; }
+        .badge-d { background: #7c3aed; }
+
+        .price-display {
+            font-size: 24px;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 5px;
+        }
+
+        .price-sub {
+            font-size: 13px;
+            color: #4b5563;
+        }
+        
+        .calc-logic {
+            font-size: 11px;
+            color: #6b7280;
+            margin-top: 8px;
+            font-style: italic;
+            border-top: 1px dashed #e5e7eb;
+            padding-top: 5px;
+        }
+
+        .visit-inputs {
+            background: #fffbeb;
+            padding: 10px;
+            border-radius: 6px;
+            margin-top: 10px;
+            border: 1px solid #fcd34d;
+        }
+
+        .visit-inputs label {
+            font-size: 12px;
+        }
+
+        .alert-msg {
+            color: #dc2626;
+            font-weight: 600;
+            font-size: 11px;
+            margin-top: 5px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Consulting Rate Calculator</h1>
+        <p class="subtitle">Live Calibration: Revenue -> Profit -> Salary -> Headcount</p>
+
+        <div class="grid">
+            
+            <!-- INPUTS -->
+            <div>
+                <div class="section-title">Client Data Points</div>
+
+                <div class="input-group" id="group_revenue">
+                    <label>1. Monthly Revenue (Est.)</label>
+                    <span class="hint">Base Scale Anchor (0.4% Est.)</span>
+                    <input type="number" id="revenue" placeholder="Start typing..." oninput="handleInputChain()">
+                </div>
+
+                <div class="input-group disabled" id="group_gop">
+                    <label>2. Gross Operating Profit (GOP)</label>
+                    <span class="hint">Profitability Cap (10% Max)</span>
+                    <input type="number" id="gop" placeholder="Optional..." oninput="handleInputChain()">
+                </div>
+
+                <div class="input-group disabled" id="group_gm">
+                    <label>3. GM Salary (Benchmark)</label>
+                    <span class="hint">Political Anchor (60% Target)</span>
+                    <input type="number" id="gmSalary" placeholder="Optional..." oninput="handleInputChain()">
+                </div>
+
+                <div class="input-group disabled" id="group_headcount">
+                    <label>4. Total Headcount</label>
+                    <span class="hint">Scale Anchor (For Option D)</span>
+                    <input type="number" id="headcount" placeholder="Optional..." oninput="handleInputChain()">
+                </div>
+
+                <div class="input-group disabled" id="group_visits">
+                     <label>5. Est. Site Visit Days</label>
+                     <input type="number" id="visitDays" value="3" oninput="handleInputChain()">
+                </div>
+            </div>
+
+            <!-- OUTPUTS -->
+            <div>
+                <div class="section-title">Recommended Pricing Strategy</div>
+
+                <!-- OPTION A -->
+                <div class="output-card highlight">
+                    <span class="option-badge badge-a">OPTION A: PURE CONTRACT</span>
+                    <div class="price-display" id="optA_price">IDR 0</div>
+                    <div class="price-sub">Flat Monthly Retainer</div>
+                    <div class="calc-logic" id="optA_logic">Waiting for inputs...</div>
+                    <div class="alert-msg" id="optA_alert"></div>
+                </div>
+
+                <!-- OPTION B -->
+                <div class="output-card">
+                    <span class="option-badge badge-b">OPTION B: CASH + CREDIT</span>
+                    <div class="price-display" id="optB_price">IDR 0</div>
+                    <div class="price-sub" id="optB_breakdown">Cash + Credit</div>
+                    <div class="calc-logic" id="optB_logic">Waiting...</div>
+                </div>
+
+                <!-- OPTION C -->
+                <div class="output-card">
+                    <span class="option-badge badge-c">OPTION C: VARIABLE / VISIT</span>
+                    <div class="price-display" id="optC_price">IDR 0</div>
+                    <div class="price-sub">Low Base Fee + Visit Fees</div>
+                    <div class="calc-logic" id="optC_logic">Waiting...</div>
+                </div>
+
+                <!-- OPTION D -->
+                 <div class="output-card">
+                    <span class="option-badge badge-d">OPTION D: HEADCOUNT SCALER</span>
+                    <div class="price-display" id="optD_price">IDR 0</div>
+                    <div class="price-sub">Dynamic Scale Rate</div>
+                    <div class="calc-logic" id="optD_logic">Waiting...</div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function formatIDR(num) {
+            if (num === 0) return "IDR 0";
+            if (num >= 1000000000) return "IDR " + (num / 1000000000).toFixed(2) + " Billion";
+            if (num >= 1000000) return "IDR " + (num / 1000000).toFixed(1) + " Million";
+            return "IDR " + num.toLocaleString('id-ID');
+        }
+
+        function handleInputChain() {
+            const revenue = parseFloat(document.getElementById('revenue').value) || 0;
+            const gop = parseFloat(document.getElementById('gop').value) || 0;
+            const gmSalary = parseFloat(document.getElementById('gmSalary').value) || 0;
+            const headcount = parseFloat(document.getElementById('headcount').value) || 0;
+
+            // Sequential Unlock (Visual Only - logic runs regardless)
+            if (revenue > 0) document.getElementById('group_gop').classList.remove('disabled');
+            else document.getElementById('group_gop').classList.add('disabled');
+
+            if (gop > 0) document.getElementById('group_gm').classList.remove('disabled');
+            else document.getElementById('group_gm').classList.add('disabled');
+
+            if (gmSalary > 0) document.getElementById('group_headcount').classList.remove('disabled');
+            else document.getElementById('group_headcount').classList.add('disabled');
+
+            if (headcount > 0) document.getElementById('group_visits').classList.remove('disabled');
+            else document.getElementById('group_visits').classList.add('disabled');
+
+            calculate();
+        }
+
+        function calculate() {
+            const revenue = parseFloat(document.getElementById('revenue').value) || 0;
+            const gop = parseFloat(document.getElementById('gop').value) || 0;
+            const gmSalary = parseFloat(document.getElementById('gmSalary').value) || 0;
+            const headcount = parseFloat(document.getElementById('headcount').value) || 0;
+            const visitDays = parseFloat(document.getElementById('visitDays').value) || 0;
+
+            // --- 1. DETERMINE BASE FEE (The "Running Meter" Logic) ---
+            // Priority: GM Salary (Anchor) > GOP (Profit Proxy) > Revenue (Scale Proxy)
+            
+            let base_fee = 0;
+            let logic_msg = "Waiting...";
+            let alert_msg = "";
+            let cap_hit = false;
+
+            if (gmSalary > 0) {
+                // Tier 1: Precise Anchor (60% of GM)
+                base_fee = gmSalary * 0.60;
+                logic_msg = `Based on 60% of GM Salary.`;
+            } else if (gop > 0) {
+                // Tier 2: Profit Proxy (1.5% of GOP)
+                base_fee = gop * 0.015;
+                logic_msg = `Estimated at 1.5% of Monthly Profit.`;
+            } else if (revenue > 0) {
+                // Tier 3: Revenue Proxy (0.4% of Revenue)
+                base_fee = revenue * 0.004;
+                logic_msg = `Estimated at 0.4% of Revenue.`;
+            } else {
+                // Reset
+                resetOutputs();
+                return;
+            }
+
+            // --- 2. APPLY CAPS (The "Influence" Check) ---
+            // If GOP is known, capped at 10% GOP (Affordability)
+            if (gop > 0) {
+                const profit_cap = gop * 0.10;
+                if (base_fee > profit_cap) {
+                    base_fee = profit_cap;
+                    cap_hit = true;
+                    logic_msg += " (Capped at 10% Profit)";
+                }
+            }
+
+            // Rounding for cleanliness
+            base_fee = Math.round(base_fee / 500000) * 500000;
+            if (base_fee < 0) base_fee = 0;
+
+
+            // --- 3. OUTPUT OPTION A (Pure Contract) ---
+            document.getElementById('optA_price').innerText = formatIDR(base_fee) + " / mo";
+            document.getElementById('optA_logic').innerText = logic_msg;
+            
+            let alertElem = document.getElementById('optA_alert');
+            if (cap_hit) {
+                alertElem.innerText = "⚠️ Fee reduced by Profit Cap.";
+                alertElem.style.display = 'block';
+            } else {
+                alertElem.style.display = 'none';
+            }
+
+
+            // --- 4. OUTPUT OPTION B (Cash + Credit) ---
+            let cash_portion = Math.round((base_fee * 0.70) / 500000) * 500000;
+            let credit_val = (base_fee - cash_portion) * 1.5;
+            let credit_portion = Math.round(credit_val / 500000) * 500000;
+
+            document.getElementById('optB_price').innerText = formatIDR(cash_portion + credit_portion) + " Value";
+            document.getElementById('optB_breakdown').innerText = `${formatIDR(cash_portion)} Cash + ${formatIDR(credit_portion)} Credit`;
+            document.getElementById('optB_logic').innerText = `70% Cash / 30% Credit (1.5x Multiplier)`;
+
+
+            // --- 5. OUTPUT OPTION C (Variable) ---
+            // Floor: 50% of Base Fee. Visit Rate: 10% of Base Fee per day.
+            let c_floor = Math.round((base_fee * 0.50) / 500000) * 500000;
+            let c_daily = Math.round((base_fee * 0.10) / 100000) * 100000;
+            let c_total = c_floor + (c_daily * visitDays);
+
+            document.getElementById('optC_price').innerText = formatIDR(c_total) + " / mo (Est)";
+            document.getElementById('optC_logic').innerText = `Base ${formatIDR(c_floor)} + ${visitDays} Visits @ ${formatIDR(c_daily)}`;
+
+
+            // --- 6. OUTPUT OPTION D (Headcount) ---
+            // If headcount exists, calc rate. If not, estimate based on Revenue/GM proxies.
+            let d_val = 0;
+            let d_msg = "Waiting for headcount...";
+            
+            // Rate per head logic: 
+            // If GM Salary known: 0.22% of GM Salary per head
+            // If only Fee known: Fee / 200 (Est headcount proxy)
+            
+            let rate_per_head = 0;
+            
+            if (gmSalary > 0) {
+                rate_per_head = gmSalary * 0.0022;
+            } else {
+                // Fallback: Estimate rate based on total base_fee (assuming ~200 pax scale)
+                rate_per_head = base_fee / 180; 
+            }
+
+            // Clean round rate
+            rate_per_head = Math.round(rate_per_head / 5000) * 5000; 
+            if (rate_per_head < 50000) rate_per_head = 50000; // Minimum 50k floor
+
+            if (headcount > 0) {
+                d_val = headcount * rate_per_head;
+                d_msg = `${headcount} pax @ ${formatIDR(rate_per_head)}/head`;
+            } else {
+                // Show estimated rate even if headcount not entered
+                d_msg = `Est. Rate: ${formatIDR(rate_per_head)}/head (Enter count)`;
+            }
+
+            d_val = Math.round(d_val / 500000) * 500000;
+            document.getElementById('optD_price').innerText = formatIDR(d_val) + " / mo";
+            document.getElementById('optD_logic').innerText = d_msg;
+        }
+
+        function resetOutputs() {
+            document.getElementById('optA_price').innerText = "IDR 0";
+            document.getElementById('optA_logic').innerText = "Waiting for inputs...";
+            document.getElementById('optB_price').innerText = "IDR 0";
+            document.getElementById('optC_price').innerText = "IDR 0";
+            document.getElementById('optD_price').innerText = "IDR 0";
+        }
+    </script>
+</body>
+</html>
